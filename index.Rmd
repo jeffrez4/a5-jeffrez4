@@ -1,0 +1,80 @@
+---
+title: "Assignment 5"
+author: "Jeffrey Zhao"
+date: "May 7, 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("analysis.R")
+library(knitr)
+library(leaflet)
+library(htmltools)
+library(ggplot2)
+library(kableExtra)
+```
+
+
+## Overview Information
+This is a brief report regarding mass shooting that occurred in the United States in 2018 ([source](data/shootings-2018.csv)). There are ``r shooting_row`` rows and ``r shooting_col`` columns. It provides the `date` when the event took place and the `state`, `city`, `address`, and `lat`/`long` coordinates for the exact locations of each shooting incident. The `num_killed` and `num_injured` describe how many were killed and injured per shooting event. There has been a total of ``r shooting_row`` shootings in 2018. ``r num_livelost`` total lives were lost as a result of the shootings in 2018. The city, ``r impact_city``, was most impacted from shootings in 2018. The city, ``r most_injured_0_killed``, sustained the most recent shooting of most injuries with no lethality. The month of ``r impact_month`` had the highest kill count in all of 2018. _Impact is measured by combining the number of kills and injuries_.
+
+
+## Summary Table
+```{r summary_table, echo = FALSE}
+kable(summary_table, col.names = c("State", "Total Killed", "Total Injured", 
+                                   "Total Impact", "Average Impact Per Event")) %>% 
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+- ``r top_impact_state``, ``r second_impact_state``, and ``r third_impact_state`` are the three most impacted states with total impacts of ``r top_impact_amt``, ``r second_impact_amt``, and ``r third_impact_amt`` lives. 
+- The lowest impact state is ``r lowest_impact_state`` with a total impact of ``r lowest_impact_amt``.
+- The average impact per event per state ranges from ``r min(summary_table$avg_impact_per)`` to ``r max(summary_table$avg_impact_per)`` lives. 
+
+## Seattle Shooting in 2018
+On `r shooting_date`, a shooting took place at `r shooting_address` in `r shooting_city`, `r shooting_state`. It resulted in `r shooting_num_killed` killed and `r shooting_num_injured` injured. The shooting began after a large fight broke out outside the parking lot of a motorcycle club where bikers have gathered, though the motive is still unclear even to this day. There were three additional people hospitalized, one crashing his vehicle to flee from the scene and two experiencing mental trauma. More coverage of the event can be found on [CBS](https://www.cbsnews.com/news/skyway-washington-shooting-biker-club-fight-near-seattle-today-2018-04-29/).
+
+## Interactive Map
+This map affords viewers the frequencies of shootings in vicinities by color opacity. The size of circles depict impact of shootings. Hovering over circles will provide more specific details for each event.
+
+```{r interactive_shooting, echo = FALSE}
+leaflet(data = shooting_df) %>% 
+  addTiles() %>% 
+  addCircleMarkers(
+    lat = ~lat,
+    lng = ~long,
+    radius = ~(num_killed + num_injured),
+    label = lapply(label_msg, HTML),
+    color = "red",
+    stroke = FALSE
+  )
+
+```
+
+**Takeaways**
+
+- The biggest impacts by a single shooting occurred in the states of Florida, Texas, and New York. 
+- More than majority of the shootings occurred from the right half of the United States.
+
+## 2018 Shootings in the United States Histogram
+The question I aim to research is: "How many shootings have occurred in each state in the year of 2018 as a way to evaluate current safety levels and gun-related regulation?". A histogram or a horizontal bar chart is the best way to convey the number of shootings for each of the United States (Continuous = Number of shootings, Categorical = States). 
+
+```{r states_histo, echo = FALSE}
+ggplot(data = shooting_states, mapping = aes(x = order, y = shooting_occurrences)) +
+  geom_col() +
+  labs(
+    title = "Shootings in the United States (2018)",
+    x = "States", 
+    y = "Frequency of Shootings in 2018"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip()
+
+```
+
+**Findings**
+
+- Utah, Massuchusetts, and Delaware were the _least_ affected states by shootings in 2018.
+- Illinois, California, and Florida were the **most** affected states by shootings in 2018.
+
+
